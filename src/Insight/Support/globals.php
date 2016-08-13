@@ -2,7 +2,7 @@
 define('DS', DIRECTORY_SEPARATOR);
 define('BASE_PATH', dirname(__FILE__) . DS);
 
-define('BASE_PLUGIN_PATH', dirname(dirname(dirname(dirname(dirname(__FILE__))))) . DS);
+define('BASE_PLUGIN_PATH', dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))) . DS);
 define('DIRECTORY_APP_NAME', 'app');
 define('DIRECTORY_APP', BASE_PLUGIN_PATH . DIRECTORY_APP_NAME . DS);
 define('DIRECTORY_APP_PLUGINS', BASE_PLUGIN_PATH . DIRECTORY_APP_NAME . DS . 'Plugins' . DS);

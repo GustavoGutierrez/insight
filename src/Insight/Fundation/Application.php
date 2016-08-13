@@ -18,7 +18,7 @@ class Application {
 	 *
 	 * @return void
 	 */
-	public function boot() {
+	public static function boot() {
 
 	}
 

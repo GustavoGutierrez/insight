@@ -37,6 +37,7 @@
 
         ],
         "files": [
+            "src/Insight/Support/globals.php",
             "src/Insight/Support/helpers.php"
         ],
         "psr-4": {
