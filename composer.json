@@ -26,19 +26,7 @@
         "nesbot/carbon": "^1.21",
         "league/event": "^2.1"
     },
-    "replace": {
-        "insight/view": "self.version",
-        "insight/config": "self.version",
-        "insight/foundation": "self.version",
-        "insight/base": "self.version",
-    },
-    "require-dev": {
-
-    },
     "autoload": {
-        "classmap": [
-
-        ],
         "files": [
             "src/Insight/Support/globals.php",
             "src/Insight/Support/helpers.php"
