@@ -13,10 +13,17 @@ class Application {
 	 */
 	protected $basePath = '';
 
+	const DS = DIRECTORY_SEPARATOR;
+
 	public function __construct($base_path) {
+
 		$this->setBasePath($base_path);
 
 		$this->loadEnv();
+	}
+
+	private function get_dir_plugins() {
+		return $this->getBasePath() . Application::DS . 'app' . Application::DS . 'Plugins' . Application::DS;
 	}
 
 	/**
@@ -29,7 +36,8 @@ class Application {
 	 * @return void
 	 */
 	public function boot() {
-		$plugins_files = scandir(DIRECTORY_APP_PLUGINS);
+
+		$plugins_files = scandir($this->get_dir_plugins());
 		foreach ($plugins_files as $file) {
 			if ($file != '.' && $file != '..' && $file != '.gitkeep') {
 				$class_name = explode('.', $file)[0];
@@ -58,12 +66,12 @@ class Application {
 	 *
 	 * @return void
 	 */
-	private function loadEnv($base_path) {
+	private function loadEnv() {
 		/**
 		 * You can then load .env in your application with:
 		 * @var Dotenv
 		 */
-		$dotenv = new Dotenv($this->basePath);
+		$dotenv = new Dotenv($this->getBasePath());
 		$dotenv->load();
 	}
 

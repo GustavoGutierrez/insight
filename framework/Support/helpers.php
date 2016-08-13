@@ -29,11 +29,7 @@ if (!function_exists('config')) {
 		if (is_null($key)) {
 			return null;
 		}
-		//var_dump(\Insight\Config\Config::get($key, $default));
-
-		var_dump(new Insight\View\View('index'));
-		exit();
-		//return insight\Config\Config::get($key, $default);
+		return Insight\Config\Config::get($key, $default);
 	}
 }
 

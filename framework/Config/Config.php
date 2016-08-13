@@ -17,7 +17,10 @@ class Config {
 	private $key = '';
 
 	public function __construct() {
+
 		$this->path = DIRECTORY_APP_CONFIG;
+
+		//$this->path = '/var/www/html/pro-profile/wp-content/plugins/wp-builder-app/app/Config/';
 	}
 
 	public static function get($config, $default = '') {
@@ -31,29 +34,34 @@ class Config {
 				$configuration = $self->requireFile($self->params);
 			}
 
-			$self->data = $configuration;
+			if ($configuration) {
 
-			$params = $self->params;
+				$self->data = $configuration;
 
-			unset($params[0]);
+				$params = $self->params;
 
-			$self->key = implode('.', $params);
+				unset($params[0]);
 
-			if (Arrays::has($self->data, $self->key)) {
+				$self->key = implode('.', $params);
+
 				return Arrays::from($self->data)->get($self->key);
+
 			}
 
 			return $default;
 
 		} else {
-			throw new Exception("File config notfound", 1);
-			exit();
+			throw new Exception("File config notfound in " . DIRECTORY_APP_CONFIG, 1);
 		}
 
 	}
 
 	private function requireFile($fileName) {
-		return require $this->path . $fileName . '.php';
+		if (file_exists($this->path . $fileName . '.php')) {
+			return require $this->path . $fileName . '.php';
+		} else {
+			return false;
+		}
 	}
 
 	public function has($config) {
