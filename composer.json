@@ -1,0 +1,53 @@
+{
+    "name": "wp_builder_app/insight",
+    "description": "The wordpress framework from builder complex app.",
+    "keywords": ["framework", "insight"],
+    "license": "MIT",
+    "homepage": "http://gustavogutierrez.co",
+    "support": {
+        "issues": "https://github.com/GustavoGutierrez/insight/issues",
+        "source": "https://github.com/GustavoGutierrez/insight"
+    },
+    "authors": [
+        {
+            "name": "Gustavo Gutierrez",
+            "email": "gustavogutierrezmercado@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.9",
+        "ext-mbstring": "*",
+        "ext-openssl": "*",
+        "symfony/http-foundation": "2.8.*|3.0.*",
+        "symfony/var-dumper": "2.8.*|3.0.*",
+        "mustache/mustache": "^2.10",
+        "vlucas/phpdotenv":"^2.3",
+        "anahkiasen/underscore-php": "^2.0",
+        "nesbot/carbon": "^1.21",
+        "league/event": "^2.1"
+    },
+    "replace": {
+        "insight/view": "self.version"
+    },
+    "require-dev": {
+
+    },
+    "autoload": {
+        "classmap": [
+
+        ],
+        "files": [
+            "src/Insight/Support/helpers.php"
+        ],
+        "psr-4": {
+            "Insight\\": "src/Insight/"
+        }
+    },
+    "minimum-stability": "dev",
+    "repositories": [
+    {
+        "type": "git",
+        "url": "https://github.com/GustavoGutierrez/insight.git"
+    }
+    ]
+}

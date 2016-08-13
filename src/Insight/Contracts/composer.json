@@ -1,0 +1,30 @@
+{
+    "name": "insight/contracts",
+    "description": "The Insight Contracts package.",
+    "license": "MIT",
+    "homepage": "http://insight.com",
+    "support": {
+        "issues": "https://github.com/insight/framework/issues",
+        "source": "https://github.com/insight/framework"
+    },
+    "authors": [
+        {
+            "name": "Gustavo Gutierrez",
+            "email": "gustavogutierrezmercado@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "Insight\\Contracts\\": ""
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "5.2-dev"
+        }
+    },
+    "minimum-stability": "dev"
+}
