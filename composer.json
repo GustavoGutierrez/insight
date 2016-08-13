@@ -14,6 +14,9 @@
             "email": "gustavogutierrezmercado@gmail.com"
         }
     ],
+    "require-dev": {
+
+    },
     "require": {
         "php": ">=5.5.9",
         "ext-mbstring": "*",
@@ -27,9 +30,12 @@
         "league/event": "^2.1"
     },
     "autoload": {
+        "classmap": [
+
+        ],
         "files": [
-            "src/Insight/Support/globals.php",
-            "src/Insight/Support/helpers.php"
+            "framework/Support/globals.php",
+            "framework/Support/helpers.php"
         ],
         "psr-4": {
             "Insight\\": "framework/"
@@ -37,9 +43,9 @@
     },
     "minimum-stability": "dev",
     "repositories": [
-    {
-        "type": "git",
-        "url": "https://github.com/GustavoGutierrez/insight"
-    }
+        {
+            "type": "git",
+            "url": "https://github.com/GustavoGutierrez/insight"
+        }
     ]
 }
