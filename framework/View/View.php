@@ -1,7 +1,7 @@
 <?php
 namespace Insight\View;
 
-use \Insight\Contracts\View\View as IView;
+use Insight\Contracts\View\IView;
 
 class View implements IView {
 
@@ -35,6 +35,9 @@ class View implements IView {
 		$this->charset = config('view.charset');
 
 		$this->extension = config('view.extension');
+
+		//dump($this);
+		//exit();
 	}
 
 	private function viewFilter($str_view) {

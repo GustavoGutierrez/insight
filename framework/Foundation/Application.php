@@ -13,17 +13,28 @@ class Application {
 	 */
 	protected $basePath = '';
 
-	const DS = DIRECTORY_SEPARATOR;
+	private $Separator = '/';
 
 	public function __construct($base_path) {
+
+		$this->Separator = DIRECTORY_SEPARATOR;
 
 		$this->setBasePath($base_path);
 
 		$this->loadEnv();
 	}
 
-	private function get_dir_plugins() {
-		return $this->getBasePath() . Application::DS . 'app' . Application::DS . 'Plugins' . Application::DS;
+	public function get_app_dir() {
+		$ds = $this->getSeparator();
+		return $this->getBasePath() . $ds . 'app' . $ds;
+	}
+
+	public function get_dir_plugins() {
+		return $this->get_app_dir() . 'Plugins' . $this->getSeparator();
+	}
+
+	public function get_config_dir() {
+		return $this->get_app_dir() . 'Config' . $this->getSeparator();
 	}
 
 	/**
@@ -42,9 +53,10 @@ class Application {
 			if ($file != '.' && $file != '..' && $file != '.gitkeep') {
 				$class_name = explode('.', $file)[0];
 
-				if ($class_name != 'BasePlugin') {
+				if ($class_name != 'Plugin') {
 					$class = '\\App\\Plugins\\' . $class_name;
 					$this->create_global_plugin(new $class());
+
 				}
 
 			}
@@ -95,5 +107,14 @@ class Application {
 		$this->basePath = $basePath;
 
 		return $this;
+	}
+
+	/**
+	 * Gets the value of Separator.
+	 *
+	 * @return mixed
+	 */
+	public function getSeparator() {
+		return $this->Separator;
 	}
 }

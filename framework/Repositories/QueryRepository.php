@@ -1,12 +1,12 @@
 <?php
 namespace Insight\Repositories;
 
-use \Insight\Contracts\Repository\Repository;
+use \Insight\Contracts\Repository\IRepository;
 
 /**
  * Repository by query common plugins
  */
-class QueryRepository implements Repository {
+class QueryRepository implements IRepository {
 	/**
 	 * Gel current post by current post type
 	 * @return Post

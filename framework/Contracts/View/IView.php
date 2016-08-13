@@ -1,7 +1,7 @@
 <?php
 namespace Insight\Contracts\View;
 
-interface View {
+interface IView {
 	/**
 	 * @param  string $view file name template
 	 * @param  array $args argumentos pasados a la vista

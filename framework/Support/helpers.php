@@ -38,7 +38,7 @@ if (!function_exists('view')) {
 	 * Obtiene y renderiza una vista
 	 * @param  string $view path
 	 * @param  array  $args [description]
-	 * @return Core\Base\View;
+	 * @return Insight\View\View;
 	 */
 	function view($view, $args = array()) {
 		return new Insight\View\View($view, $args);

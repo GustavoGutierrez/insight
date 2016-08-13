@@ -18,9 +18,14 @@ class Config {
 
 	public function __construct() {
 
-		$this->path = DIRECTORY_APP_CONFIG;
+		global $app;
 
-		//$this->path = '/var/www/html/pro-profile/wp-content/plugins/wp-builder-app/app/Config/';
+		if (!is_null($app)) {
+			$this->path = $app->get_config_dir();
+		} else {
+			$this->path = '../../';
+		}
+
 	}
 
 	public static function get($config, $default = '') {
@@ -51,7 +56,7 @@ class Config {
 			return $default;
 
 		} else {
-			throw new Exception("File config notfound in " . DIRECTORY_APP_CONFIG, 1);
+			throw new Exception("File config notfound in " . $app->get_config_dir(), 1);
 		}
 
 	}

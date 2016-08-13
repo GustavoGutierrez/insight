@@ -1,7 +1,7 @@
 <?php
-namespace Insight\Contracts;
+namespace Insight\Contracts\Repository;
 
-interface Repository {
+interface IRepository {
 
 	public function get();
 
