@@ -27,7 +27,10 @@
         "league/event": "^2.1"
     },
     "replace": {
-        "insight/view": "self.version"
+        "insight/view": "self.version",
+        "insight/config": "self.version",
+        "insight/foundation": "self.version",
+        "insight/base": "self.version",
     },
     "require-dev": {
 
@@ -41,7 +44,7 @@
             "src/Insight/Support/helpers.php"
         ],
         "psr-4": {
-            "Insight\\": "src/Insight/"
+            "Insight\\": "framework/"
         }
     },
     "minimum-stability": "dev",
