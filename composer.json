@@ -47,7 +47,7 @@
     "repositories": [
     {
         "type": "git",
-        "url": "git@github.com:GustavoGutierrez/insight.git"
+        "url": "https://github.com/GustavoGutierrez/insight"
     }
     ]
 }
