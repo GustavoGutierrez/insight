@@ -27,7 +27,8 @@
         "vlucas/phpdotenv":"^2.3",
         "anahkiasen/underscore-php": "^2.0",
         "nesbot/carbon": "^1.21",
-        "league/event": "^2.1"
+        "league/event": "^2.1",
+        "wp_builder_app/posttype":"dev-master"
     },
     "autoload": {
         "classmap": [
