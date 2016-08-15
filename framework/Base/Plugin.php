@@ -11,8 +11,6 @@ use League\Event\Emitter;
 
 class Plugin extends AbstractPlugin implements IPlugin {
 
-	//use HelperDebugMethods;
-
 	protected $query;
 
 	protected $scripts_admin = array();
@@ -27,8 +25,7 @@ class Plugin extends AbstractPlugin implements IPlugin {
 	protected $emitter;
 
 	public function __construct() {
-		// $this->query = $QueryRepository;
-		// $this->register_actions();
+
 	}
 
 	/**
@@ -102,38 +99,6 @@ class Plugin extends AbstractPlugin implements IPlugin {
 		return end($array) . '/' . DIRECTORY_APP_NAME;
 	}
 
-	/**
-	 * Load all actions
-	 * @return void
-	 */
-	protected function register_actions() {
-		$helpers_uses = class_uses($this);
-
-		if (count($helpers_uses) > 0) {
-
-			if (method_exists($this, 'register_cpt')) {
-				$this->register_cpt();
-			}
-
-			if (method_exists($this, 'register_tx')) {
-				$this->register_tx();
-			}
-
-			foreach ($helpers_uses as $helper) {
-
-				$function = new \ReflectionClass($helper);
-				if ($function->isTrait()) {
-					add_action('init', array(
-						$this,
-						'Init_Action_' . end(explode('\\', $helper)),
-					), 0);
-				}
-
-			}
-
-		}
-	}
-
 	protected function add_scripts_action() {
 
 		//add css and js for backend
@@ -184,15 +149,174 @@ class Plugin extends AbstractPlugin implements IPlugin {
 		}
 	}
 
+	/**
+	 * Boot class Inicializa el plugin
+	 * @return void
+	 */
 	public function boot() {
 		$this->emitter = new Emitter;
-		//Register all acction of the plugin
-		//$this->__construct(new QueryRepository());
-		//$this->container = $container;
-		//
 		$this->query = new QueryRepository();
-		$this->register_actions();
 
+		//Busca las acciones definidas en el plugin y las agrega como acciones de Wordpress
+		$this->add_actions();
+		add_action('admin_menu', array($this, 'add_metaboxes'), 1000);
+
+	}
+
+	/**
+	 * Registra y encola todos los metabox para los metodos definidos
+	 */
+	public function add_metaboxes() {
+		$methos = $this->getMethods("/^metabox_/");
+
+		sort($methos); //Se ordenas los metodos por prioridad
+		$metaboxes = array_map(array($this, 'describeMetabox'), $methos);
+
+		//dump($metaboxes);
+
+		if ($metaboxes) {
+			foreach ($metaboxes as $metabox) {
+				add_meta_box($metabox->id,
+					$metabox->title,
+					array($this, $metabox->callback),
+					$metabox->screen,
+					'advanced',
+					$metabox->priority,
+					null);
+			}
+		}
+
+	}
+
+	/**
+	 * Registra las acciones para los metodos definidos en el plugin
+	 */
+	protected function add_actions() {
+		$actionMethos = $this->getMethods("/^action_/");
+		sort($actionMethos); //Se ordenas las acciones por prioridad
+		$actions = array_map(array($this, 'describeActions'), $actionMethos);
+
+		//dump($actions);
+
+		if ($actions) {
+			foreach ($actions as $action) {
+				add_action($action->tag, array($this, $action->method), $act->priority);
+			}
+		}
+
+	}
+
+	/**
+	 * Obtiene un array con las acciones que se encuentras definidas en la clase del plugin
+	 * @return array Array de string con los nombres de los metodos definidos en la clase del plugin
+	 */
+	private function getMethods($pattern = "/^action_/") {
+		$methos = get_class_methods($this->class);
+		$actions = array();
+
+		foreach ($methos as $methodName) {
+			if (preg_match($pattern, $methodName)) {
+				array_push($actions, $methodName);
+			}
+		}
+		return $actions;
+	}
+
+	/**
+	 * Descrive una accion para el nombre del metodo de la accion resibido
+	 * @param  string $action Nombre o metodo de la accion
+	 * @return stdClass
+	 * {
+	 *  "method": "action_postypes_init_10"
+	 *  "name": "postypes"
+	 *  "tag": "init"
+	 *  "priority": 10
+	 * }
+	 */
+	private function describeActions($action = "") {
+
+		if (!empty($action)) {
+			$parts = explode('_', $action);
+			unset($parts[0]);
+			$parts = array_values($parts);
+
+			$act = new \stdClass();
+
+			$act->method = $action;
+
+			switch (count($parts)) {
+			case 1:
+			case 2:
+			case 3:
+				$act->name = $parts[0];
+			case 2:
+			case 3:
+				$act->tag = $parts[1];
+			case 3:
+				$act->priority = intval($parts[2]);
+				break;
+			}
+			if (count($parts) == 1) {
+				$act->tag = 'initi';
+				$act->priority = 10;
+			}
+
+			return $act;
+
+		}
+		return null;
+	}
+
+	/**
+	 * Descrive una los metodos que implementan metabox
+	 * @param  string $method Nombre o metodo de la que renderiza un metabox
+	 * @return stdClass
+	 *  {
+	 *   "id": "recommendedLinks"
+	 *   "title": "Recommended Links"
+	 *   "callback": "metabox_recommendedLinks_dummy_otroTest_high"
+	 *   "priority": "high"
+	 *   "screen": array:2 [
+	 *        0 => "dummy"
+	 *        1 => "otro_test"
+	 *    ]
+	 *  }
+	 */
+	private function describeMetabox($method = "") {
+
+		if (!empty($method)) {
+			$parts = explode('_', $method);
+			unset($parts[0]); //remove metabox_
+			$parts = array_values($parts);
+
+			$desc = new \stdClass();
+
+			$desc->id = $parts[0];
+			$desc->title = ucwords(str_replace("_", " ", $this->uncamelCase($parts[0])));
+			$desc->callback = $method;
+
+			if (count($parts) == 1) {
+				$desc->priority = 'default';
+				$desc->screen = null;
+			} else {
+				unset($parts[0]);
+				$parts = array_values($parts);
+
+				$desc->priority = end($parts);
+
+				//elimino el ultimo valor la priority
+				unset($parts[(count($parts) - 1)]);
+				$parts = array_values($parts);
+
+				//en $parts queda las taxonomias
+				$desc->screen = array_map(array($this, 'uncamelCase'), $parts);
+
+			}
+
+			return $desc;
+
+		}
+		return null;
 	}
 
 }

@@ -105,6 +105,10 @@ class View implements IView {
 	}
 
 	public function __toString() {
+		return $this->get();
+	}
+
+	public function get() {
 		return $this->render($this->view, $this->args);
 	}
 

@@ -55,7 +55,10 @@ class Application {
 
 				if ($class_name != 'Plugin') {
 					$class = '\\App\\Plugins\\' . $class_name;
-					$this->create_global_plugin(new $class());
+					$PluginInstance = new $class();
+					$PluginInstance->setClass($class);
+					$ClassRef = &$PluginInstance;
+					$this->create_global_plugin($ClassRef);
 
 				}
 
@@ -68,7 +71,7 @@ class Application {
 	 * @param  IPlugin $plugin Instance de clase Plugin
 	 * @return void
 	 */
-	public function create_global_plugin(IPlugin $plugin) {
+	public function create_global_plugin(&$plugin) {
 		$GLOBALS['BCA_' . get_class($plugin)] = $plugin;
 		$GLOBALS['BCA_' . get_class($plugin)]->boot();
 	}

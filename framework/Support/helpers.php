@@ -41,7 +41,8 @@ if (!function_exists('view')) {
 	 * @return Insight\View\View;
 	 */
 	function view($view, $args = array()) {
-		return new Insight\View\View($view, $args);
+		$template = new Insight\View\View($view, $args);
+		return $template;
 	}
 
 }
