@@ -3,6 +3,7 @@
 namespace Insight\Foundation;
 
 use Dotenv\Dotenv;
+use \Insight\Config\Config;
 use \Insight\Contracts\Plugin\Plugin as IPlugin;
 
 class Application {
@@ -26,7 +27,7 @@ class Application {
 
 	public function get_app_dir() {
 		$ds = $this->getSeparator();
-		return $this->getBasePath() . $ds . 'app' . $ds;
+		return $this->getBasePath() . 'app' . $ds;
 	}
 
 	public function get_dir_plugins() {
@@ -48,6 +49,8 @@ class Application {
 	 */
 	public function boot() {
 
+		do_action('app_before_boot_complete');
+
 		$plugins_files = scandir($this->get_dir_plugins());
 		foreach ($plugins_files as $file) {
 			if ($file != '.' && $file != '..' && $file != '.gitkeep') {
@@ -63,6 +66,24 @@ class Application {
 				}
 
 			}
+		}
+		$this->appBootComplete();
+	}
+
+	private function appBootComplete() {
+
+		do_action('app_after_boot_complete');
+
+		add_filter('init', array($this, 'load_app_textdomain'));
+	}
+
+	public function load_app_textdomain() {
+		$ds = $this->getSeparator();
+		$appPath = $this->get_app_dir();
+		$pathFileLang = $appPath . 'Lang' . $ds . get_locale() . '.mo';
+		if (file_exists($pathFileLang)) {
+			$textdomain = Config::get('app.textdomain', 'wba');
+			load_textdomain($textdomain, $pathFileLang);
 		}
 	}
 

@@ -6,7 +6,6 @@ use Insight\Base\Script;
 use Insight\Base\Style;
 use Insight\Contracts\Plugin\Plugin as IPlugin;
 use Insight\Repositories\QueryRepository;
-//use Insight\Traits\HelperDebugMethods;
 use League\Event\Emitter;
 
 class Plugin extends AbstractPlugin implements IPlugin {
@@ -18,6 +17,13 @@ class Plugin extends AbstractPlugin implements IPlugin {
 
 	protected $styles_admin = array();
 	protected $styles_frontend = array();
+
+	/**
+	 * Arrya with posttypes enables for metabox autosave
+	 * @var array
+	 */
+	private $posttypes_metaboxes = array();
+
 	/**
 	 * Object Emitter
 	 * @var League\Event\Emitter $emitter
@@ -159,7 +165,7 @@ class Plugin extends AbstractPlugin implements IPlugin {
 
 		//Busca las acciones definidas en el plugin y las agrega como acciones de Wordpress
 		$this->add_actions();
-		add_action('admin_menu', array($this, 'add_metaboxes'), 1000);
+		add_action('add_meta_boxes', array($this, 'add_metaboxes'), 1000);
 
 	}
 
@@ -183,9 +189,55 @@ class Plugin extends AbstractPlugin implements IPlugin {
 					'advanced',
 					$metabox->priority,
 					null);
+				array_merge($this->posttypes_metaboxes, $metabox->screen);
+			}
+
+			if (count($this->posttypes_metaboxes) > 0) {
+				$this->posttypes_metaboxes = array_unique($this->posttypes_metaboxes);
+
+				add_action('save_post',
+					array(
+						$this,
+						'enableAutosaveFor',
+					)
+				);
 			}
 		}
 
+	}
+
+	private function enableAutosaveFor() {
+		global $post;
+
+		$post_types = $this->posttypes_metaboxes;
+
+		if (count($post_types)) {
+
+			//Proccess only posttype registerd
+			if (!in_array($_POST['post_type'], $post_types)) {
+				return $post->ID;
+			}
+			//Process only not autosave
+			if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+				return $post->ID;
+			}
+
+			$metadatas = $_POST;
+			unset($metadatas['post_type']);
+			$metadatas = array_values($metadatas);
+
+			if (count($metadatas) > 0) {
+				foreach ($metadatas as $meta => $value) {
+					update_post_meta(
+						$post->ID,
+						$meta,
+						sanitize_text_field($value)
+					);
+				}
+			}
+		} else {
+			return $post->ID;
+		}
 	}
 
 	/**
@@ -200,7 +252,7 @@ class Plugin extends AbstractPlugin implements IPlugin {
 
 		if ($actions) {
 			foreach ($actions as $action) {
-				add_action($action->tag, array($this, $action->method), $act->priority);
+				add_action($action->tag, array($this, $action->method), $act->priority, 1);
 			}
 		}
 
@@ -317,6 +369,26 @@ class Plugin extends AbstractPlugin implements IPlugin {
 
 		}
 		return null;
+	}
+
+	public static function __callStatic($name, $arguments) {
+		$self = new self();
+
+		if (method_exists($self->class, $name)) {
+			return call_user_func_array(array($self, $name), $arguments);
+		}
+		return null;
+	}
+
+	public function __get($name) {
+		if (isset($this->{$name})) {
+			return $this->{$name};
+		}
+		return null;
+	}
+
+	public function __toString() {
+		return $this->class;
 	}
 
 }
