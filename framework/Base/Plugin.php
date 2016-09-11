@@ -11,10 +11,8 @@ use League\Event\Emitter;
 class Plugin extends AbstractPlugin implements IPlugin {
 
 	protected $query;
-
 	protected $scripts_admin = array();
 	protected $scripts_frontend = array();
-
 	protected $styles_admin = array();
 	protected $styles_frontend = array();
 
@@ -30,8 +28,11 @@ class Plugin extends AbstractPlugin implements IPlugin {
 	 */
 	protected $emitter;
 
-	public function __construct() {
-
+    /**
+     * Plugin constructor.
+     */
+    public function __construct() {
+        
 	}
 
 	/**
@@ -106,7 +107,6 @@ class Plugin extends AbstractPlugin implements IPlugin {
 	}
 
 	protected function add_scripts_action() {
-
 		//add css and js for backend
 		add_action('admin_print_scripts-post.php', array($this, 'add_admin_assets'), 1000);
 		add_action('admin_print_scripts-post-new.php', array($this, 'add_admin_assets'), 1000);
@@ -117,12 +117,11 @@ class Plugin extends AbstractPlugin implements IPlugin {
 
 	public function add_admin_assets() {
 		global $post_type;
-
+        do_action('app_before_admin_assets');
 		if (count($this->scripts_admin) > 0) {
 			foreach ($this->scripts_admin as $js) {
 				if ($js->post_type == $post_type) {
 					$js->enqueue();
-				} else {
 				}
 			}
 		}
@@ -134,10 +133,12 @@ class Plugin extends AbstractPlugin implements IPlugin {
 				}
 			}
 		}
+        do_action('app_after_admin_assets');
 	}
 
 	public function add_frontend_assets() {
 		global $post_type;
+        do_action('app_before_frontend_assets');
 		if (count($this->scripts_frontend) > 0) {
 			foreach ($this->scripts_frontend as $js) {
 				if ($js->post_type == $post_type) {
@@ -153,6 +154,7 @@ class Plugin extends AbstractPlugin implements IPlugin {
 				}
 			}
 		}
+        do_action('app_after_frontend_assets');
 	}
 
 	/**
@@ -162,11 +164,9 @@ class Plugin extends AbstractPlugin implements IPlugin {
 	public function boot() {
 		$this->emitter = new Emitter;
 		$this->query = new QueryRepository();
-
 		//Busca las acciones definidas en el plugin y las agrega como acciones de Wordpress
 		$this->add_actions();
-		add_action('add_meta_boxes', array($this, 'add_metaboxes'), 1000);
-
+		add_action('cmb2_admin_init', array($this, 'add_metaboxes'), 1000);
 	}
 
 	/**
@@ -174,69 +174,11 @@ class Plugin extends AbstractPlugin implements IPlugin {
 	 */
 	public function add_metaboxes() {
 		$methos = $this->getMethods("/^metabox_/");
-
 		sort($methos); //Se ordenas los metodos por prioridad
-		$metaboxes = array_map(array($this, 'describeMetabox'), $methos);
-
-		//dump($metaboxes);
-
-		if ($metaboxes) {
-			foreach ($metaboxes as $metabox) {
-				add_meta_box($metabox->id,
-					$metabox->title,
-					array($this, $metabox->callback),
-					$metabox->screen,
-					'advanced',
-					$metabox->priority,
-					null);
-				array_merge($this->posttypes_metaboxes, $metabox->screen);
+		if ($methos) {
+			foreach ($methos as $metabox) {
+                call_user_func(array($this, $metabox));
 			}
-
-			if (count($this->posttypes_metaboxes) > 0) {
-				$this->posttypes_metaboxes = array_unique($this->posttypes_metaboxes);
-
-				add_action('save_post',
-					array(
-						$this,
-						'enableAutosaveFor',
-					)
-				);
-			}
-		}
-
-	}
-
-	private function enableAutosaveFor() {
-		global $post;
-
-		$post_types = $this->posttypes_metaboxes;
-
-		if (count($post_types)) {
-
-			//Proccess only posttype registerd
-			if (!in_array($_POST['post_type'], $post_types)) {
-				return $post->ID;
-			}
-			//Process only not autosave
-			if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
-				return $post->ID;
-			}
-
-			$metadatas = $_POST;
-			unset($metadatas['post_type']);
-			$metadatas = array_values($metadatas);
-
-			if (count($metadatas) > 0) {
-				foreach ($metadatas as $meta => $value) {
-					update_post_meta(
-						$post->ID,
-						$meta,
-						sanitize_text_field($value)
-					);
-				}
-			}
-		} else {
-			return $post->ID;
 		}
 	}
 
@@ -244,18 +186,16 @@ class Plugin extends AbstractPlugin implements IPlugin {
 	 * Registra las acciones para los metodos definidos en el plugin
 	 */
 	protected function add_actions() {
+        do_action('app_before_actions');
 		$actionMethos = $this->getMethods("/^action_/");
 		sort($actionMethos); //Se ordenas las acciones por prioridad
 		$actions = array_map(array($this, 'describeActions'), $actionMethos);
-
-		//dump($actions);
-
 		if ($actions) {
-			foreach ($actions as $action) {
-				add_action($action->tag, array($this, $action->method), $act->priority, 1);
-			}
+            foreach ($actions as $action) {
+                add_action($action->tag, array($this, $action->method), $act->priority, 1);
+            }
+            do_action('app_after_textdomain');
 		}
-
 	}
 
 	/**
@@ -334,42 +274,6 @@ class Plugin extends AbstractPlugin implements IPlugin {
 	 *    ]
 	 *  }
 	 */
-	private function describeMetabox($method = "") {
-
-		if (!empty($method)) {
-			$parts = explode('_', $method);
-			unset($parts[0]); //remove metabox_
-			$parts = array_values($parts);
-
-			$desc = new \stdClass();
-
-			$desc->id = $parts[0];
-			$desc->title = ucwords(str_replace("_", " ", $this->uncamelCase($parts[0])));
-			$desc->callback = $method;
-
-			if (count($parts) == 1) {
-				$desc->priority = 'default';
-				$desc->screen = null;
-			} else {
-				unset($parts[0]);
-				$parts = array_values($parts);
-
-				$desc->priority = end($parts);
-
-				//elimino el ultimo valor la priority
-				unset($parts[(count($parts) - 1)]);
-				$parts = array_values($parts);
-
-				//en $parts queda las taxonomias
-				$desc->screen = array_map(array($this, 'uncamelCase'), $parts);
-
-			}
-
-			return $desc;
-
-		}
-		return null;
-	}
 
 	public static function __callStatic($name, $arguments) {
 		$self = new self();

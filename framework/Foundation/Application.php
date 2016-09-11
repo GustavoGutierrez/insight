@@ -18,6 +18,8 @@ class Application {
 
 	public function __construct($base_path) {
 
+        do_action('before_wp_builder_app');
+
 		$this->Separator = DIRECTORY_SEPARATOR;
 
 		$this->setBasePath($base_path);
@@ -51,33 +53,45 @@ class Application {
 
 		do_action('app_before_boot_complete');
 
-		$plugins_files = scandir($this->get_dir_plugins());
+        $cmb2InitPath = $this->getBasePath().'vendor/webdevstudios/cmb2/init.php';
+        $cmb2InitPathOpc = $this->getBasePath().'vendor/webdevstudios/CMB2/init.php';
+
+        if (file_exists($cmb2InitPath)) {
+            require $cmb2InitPath;
+        } elseif ( $cmb2InitPathOpc ) {
+          require_once $cmb2InitPathOpc;
+        }
+
+        $plugins_files = scandir($this->get_dir_plugins());
+        do_action('app_before_boot_plugins');
 		foreach ($plugins_files as $file) {
 			if ($file != '.' && $file != '..' && $file != '.gitkeep') {
 				$class_name = explode('.', $file)[0];
-
 				if ($class_name != 'Plugin') {
 					$class = '\\App\\Plugins\\' . $class_name;
-					$PluginInstance = new $class();
-					$PluginInstance->setClass($class);
-					$ClassRef = &$PluginInstance;
-					$this->create_global_plugin($ClassRef);
+                    $pluginDoAction = strtolower(str_replace('\\','_', $class));
+                    do_action('before'.$pluginDoAction); //before_app_plugins_dummies
+					    $PluginInstance = new $class();
+					    $PluginInstance->setClass($class);
+					    $ClassRef = &$PluginInstance;
+					    $this->create_global_plugin($ClassRef);
+                    do_action('after'.$pluginDoAction); //after_app_plugins_dummies
 
 				}
 
 			}
 		}
+        do_action('app_after_boot_plugins');
 		$this->appBootComplete();
 	}
 
 	private function appBootComplete() {
-
 		do_action('app_after_boot_complete');
-
 		add_filter('init', array($this, 'load_app_textdomain'));
 	}
 
 	public function load_app_textdomain() {
+        do_action('app_before_textdomain');
 		$ds = $this->getSeparator();
 		$appPath = $this->get_app_dir();
 		$pathFileLang = $appPath . 'Lang' . $ds . get_locale() . '.mo';
@@ -85,6 +99,7 @@ class Application {
 			$textdomain = Config::get('app.textdomain', 'wba');
 			load_textdomain($textdomain, $pathFileLang);
 		}
+        do_action('app_after_textdomain');
 	}
 
 	/**
@@ -109,6 +124,7 @@ class Application {
 		 */
 		$dotenv = new Dotenv($this->getBasePath());
 		$dotenv->load();
+        do_action('app_after_env');
 	}
 
 	/**
